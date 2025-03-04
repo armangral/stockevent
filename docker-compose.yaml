@@ -1,0 +1,57 @@
+services:
+  db:
+    container_name: postgresql_db_realfund
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - postgres_data_realfund:/var/lib/postgresql/data
+    networks:
+      - app_network_realfund
+    env_file:
+      - ./.env
+
+  # pgadmin:
+  #   container_name: pgadmin_realfund
+  #   image: dpage/pgadmin4:latest
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+  #   ports:
+  #     - "5058:80"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app_network_realfund
+  #   env_file:
+  #     - ./.env
+
+  app:
+    container_name: app_network_realfund
+    build: .
+    command: >
+      bash -c "alembic upgrade head &&
+               uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+    ports:
+      - "8009:8000"
+    depends_on:
+      - db
+    restart: on-failure
+    networks:
+      - app_network_realfund
+    env_file:
+      - ./.env
+
+
+
+volumes:
+  postgres_data_realfund:
+    driver: local
+
+networks:
+  app_network_realfund:
+    driver: bridge

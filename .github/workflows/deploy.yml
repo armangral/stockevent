@@ -1,0 +1,36 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -H 49.12.34.250 >> ~/.ssh/known_hosts
+
+      - name: Sync files to server
+        run: |
+          rsync -avz --delete . root@49.12.34.250:~/realfund-backend/
+
+      - name: Deploy application
+        run: |
+          ssh root@49.12.34.250 << 'EOF'
+          cd ~/realfund-backend
+          docker-compose down
+          docker-compose build --no-cache
+          docker-compose up -d
+          EOF

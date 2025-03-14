@@ -92,7 +92,7 @@ async def send_invitation_email(
 async def send_verification_email(to_email: str, token: str, expiration_time: str):
     invitation_link = f"{settings.FRONTEND_URL}/verify-email/{token}"
     message = MessageSchema(
-        subject="Email Verification RealFund",
+        subject="Email Verification StockEvent",
         recipients=[to_email],
         template_body={
             "email": to_email,
@@ -110,7 +110,7 @@ async def send_verification_email(to_email: str, token: str, expiration_time: st
 async def send_password_reset_email(to_email: str, token: str, expiration_time: str):
     reset_link = f"{settings.FRONTEND_URL}/reset-password/{token}"
     message = MessageSchema(
-        subject="Password Reset - RealFund",
+        subject="Password Reset - StockEvent",
         recipients=[to_email],
         template_body={
             "email": to_email,
@@ -127,7 +127,7 @@ async def send_password_reset_email(to_email: str, token: str, expiration_time: 
 async def send_welcome_email(to_email: str, password: str):
     login_link = f"{settings.FRONTEND_URL}/signin"
     message = MessageSchema(
-        subject="Welcome to RealFund!",
+        subject="Welcome to StockEvent!",
         recipients=[to_email],
         template_body={
             "email": to_email,
@@ -162,7 +162,7 @@ async def send_property_email(to_email: str, property_details: dict):
         # 2. Render template with property details
         rendered_html = template.render(
             title="Property Summary",
-            brand_name="RealFund",
+            brand_name="StockEvent",
             property=property_details,
             now=datetime.now(),
         )

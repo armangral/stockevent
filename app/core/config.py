@@ -49,5 +49,7 @@ class Settings(BaseSettings):
     CLIENT_SECRET: str
     REDIRECT_URI: str
 
+    FINNHUB_API_KEY: str
+
 
 settings = Settings()

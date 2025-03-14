@@ -1770,3 +1770,13 @@ async def get_stock_data_gbp(
         raise HTTPException(status_code=404, detail="No data found")
 
     return data
+
+
+@router.get("/stocks/usd/{symbol}")
+async def get_stock_statistics_usd(symbol: str):
+    return fetch_historical_data(symbol, currency="USD")
+
+
+@router.get("stocks/gbp/{symbol}")
+async def get_stock_statistics_gbp(symbol: str):
+    return fetch_historical_data(symbol, currency="GBP")

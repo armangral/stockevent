@@ -1,3 +1,4 @@
+import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import yfinance as yf
@@ -6,9 +7,14 @@ import yfinance as yf
 
 async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency: str):
     data = []
-
+    
+    
     for symbol in symbols:
+        url = f"https://api.coingecko.com/api/v3/coins/{symbol["id"]}"
+        response = requests.get(url).json()
+        
         symbol = symbol["symbol"]
+
         try:
             crypto = yf.Ticker(f"{symbol}-{currency}")
             history = crypto.history(period="1d", interval="1h").iloc[-1]
@@ -22,7 +28,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
                     "change_percent": round(
                         info.get("regularMarketChangePercent", 0), 2
                     ),
-                    "logo_url": info.get("logo_url", "N/A"),  # Fetching logo URL
+                    "logo_url": response["image"]["large"],  # Fetching logo URL
                 }
             )
         except Exception:

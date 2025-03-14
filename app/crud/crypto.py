@@ -10,7 +10,8 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
     
     
     for symbol in symbols:
-        url = f"https://api.coingecko.com/api/v3/coins/{symbol["id"]}"
+        a = symbol["id"]
+        url = f"https://api.coingecko.com/api/v3/coins/{a}"
         response = requests.get(url).json()
         print(f"response is {response}")
         symbol = symbol["symbol"]

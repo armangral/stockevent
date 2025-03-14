@@ -21,6 +21,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
                     "change_percent": round(
                         info.get("regularMarketChangePercent", 0), 2
                     ),
+                    "logo_url": info.get("logo_url", "N/A"),  # Fetching logo URL
                 }
             )
         except Exception:
@@ -30,6 +31,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
                     "price": "N/A",
                     "market_cap": "N/A",
                     "change_percent": "N/A",
+                    "logo_url": "N/A",  # Default in case of failure
                 }
             )
 

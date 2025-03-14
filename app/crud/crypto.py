@@ -81,8 +81,13 @@ async def fetch_stock_data_crud(db: AsyncSession, tickers: List[str]):
 
 async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str], currency="USD"):
     data = []
-    c = CurrencyRates()
-    usd_to_gbp_rate = c.get_rate("USD", "GBP") if currency == "GBP" else 1.0
+
+    # Fetch USD to GBP conversion using yfinance
+    usd_to_gbp_rate = (
+        yf.Ticker("GBPUSD=X").history(period="1d")["Close"].iloc[-1]
+        if currency == "GBP"
+        else 1.0
+    )
 
     for ticker_info in tickers:
         image = ticker_info["logo_url"]

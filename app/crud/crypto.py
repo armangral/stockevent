@@ -1,7 +1,25 @@
+import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import yfinance as yf
 
+
+
+COINGECKO_API_URL = "https://api.coingecko.com/api/v3/coins/markets"
+
+
+async def get_crypto_logo(symbol: str) -> str:
+    """Fetch cryptocurrency logo URL from CoinGecko."""
+    params = {
+        "vs_currency": "usd",
+        "ids": symbol.lower(),  # CoinGecko uses lowercase IDs
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(COINGECKO_API_URL, params=params)
+        if response.status_code == 200 and response.json():
+            return response.json()[0].get("image", "N/A")
+        return "N/A"
 
 
 async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency: str):
@@ -13,6 +31,8 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
             history = crypto.history(period="1d", interval="1h").iloc[-1]
             info = crypto.info
 
+            logo_url = await get_crypto_logo(symbol)  # Fetch logo from CoinGecko
+
             data.append(
                 {
                     "symbol": symbol,
@@ -21,7 +41,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
                     "change_percent": round(
                         info.get("regularMarketChangePercent", 0), 2
                     ),
-                    "logo_url": info.get("logo_url", "N/A"),  # Fetching logo URL
+                    "logo_url": logo_url,
                 }
             )
         except Exception:
@@ -31,7 +51,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
                     "price": "N/A",
                     "market_cap": "N/A",
                     "change_percent": "N/A",
-                    "logo_url": "N/A",  # Default in case of failure
+                    "logo_url": "N/A",
                 }
             )
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
-from app.crud.crypto import fetch_crypto_data_crud, fetch_historical_data
+from app.crud.crypto import fetch_crypto_data_crud, fetch_historical_data, fetch_stock_data_crud
 
 
 router = APIRouter()
@@ -1249,7 +1249,7 @@ async def get_stock_data_usd(
         },
     ][skip : skip + limit]
 
-    data = await fetch_crypto_data_crud(db, stock_symbols, currency="USD")
+    data = await fetch_stock_data_crud(db, stock_symbols, currency="USD")
     if not data:
         raise HTTPException(status_code=404, detail="No data found")
 

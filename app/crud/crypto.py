@@ -206,3 +206,57 @@ def fetch_historical_data_stock(symbol, currency):
         return data
     except Exception:
         return {"error": "Data fetch failed"}
+    
+def fetch_historical_data_stock_gbp(symbol):
+    try:
+        crypto = yf.Ticker(symbol)
+        usd_to_gbp_rate = (
+            1 / yf.Ticker("GBPUSD=X").history(period="1d")["Close"].iloc[-1]
+        )
+
+        timeframes = {
+            "1 Day": ("1d", "15m"),
+            "1 Week": ("7d", "1h"),
+            "1 Month": ("1mo", "1d"),
+            "3 Months": ("3mo", "1d"),
+            "1 Year": ("1y", "1wk"),
+            "5 Years": ("5y", "1mo"),
+        }
+
+        data = {}
+        for label, (period, interval) in timeframes.items():
+            history = crypto.history(period=period, interval=interval)
+            entries = []
+
+            step = max(len(history) // 70, 1)
+            for i in range(0, len(history), step):
+                current_price_usd = history.iloc[i]["Close"]
+                prev_price_usd = (
+                    history.iloc[i - 1]["Close"] if i > 0 else current_price_usd
+                )
+
+                # GBP Price & Change Calculation
+                current_price_gbp = round(current_price_usd * usd_to_gbp_rate, 2)
+                prev_price_gbp = round(prev_price_usd * usd_to_gbp_rate, 2)
+
+                change_gbp = round(current_price_gbp - prev_price_gbp, 2)
+                percent_change_gbp = (
+                    round((change_gbp / prev_price_gbp) * 100, 2)
+                    if prev_price_gbp != 0
+                    else 0
+                )
+
+                entries.append(
+                    {
+                        "Time": history.index[i],
+                        "Price": current_price_gbp,
+                        "Change": change_gbp,
+                        "% Change": percent_change_gbp,
+                    }
+                )
+
+            data[label] = entries
+        return data
+
+    except Exception as e:
+        return {"error": f"Data fetch failed: {str(e)}"}

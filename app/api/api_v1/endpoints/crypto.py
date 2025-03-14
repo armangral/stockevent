@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
-from app.crud.crypto import fetch_crypto_data_crud, fetch_historical_data, fetch_historical_data_stock, fetch_stock_data_crud, fetch_stock_data_crud_gbp
+from app.crud.crypto import fetch_crypto_data_crud, fetch_historical_data, fetch_historical_data_stock, fetch_historical_data_stock_gbp, fetch_stock_data_crud, fetch_stock_data_crud_gbp
 
 
 router = APIRouter()
@@ -1779,4 +1779,4 @@ async def get_stock_statistics_usd(symbol: str):
 
 @router.get("stocks/gbp/{symbol}")
 async def get_stock_statistics_gbp(symbol: str):
-    return fetch_historical_data(symbol, currency="GBP")
+    return fetch_historical_data_stock_gbp(symbol)

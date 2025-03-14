@@ -79,6 +79,49 @@ async def fetch_stock_data_crud(db: AsyncSession, tickers: List[str]):
             
     return data
 
+async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str],currency:str):
+    data = []
+
+    for ticker_info in tickers:
+        image = ticker_info["logo_url"]
+        ticker = ticker_info["symbol"]
+        company_name = ticker_info["company_name"]
+
+        try:
+            stock = yf.Ticker(f"{ticker}-{currency}")
+            history = stock.history(period="1d").iloc[-1]
+            info = stock.info
+
+            # Only the specified fields
+            data.append(
+                {
+                    "symbol": ticker,
+                    "price": round(history["Close"], 2),
+                    "change_percent": round(
+                        info.get("regularMarketChangePercent", 0) * 100, 2
+                    ),
+                    "market_cap": round(info.get("marketCap", 0)),
+                    "sector": info.get("sector", "N/A"),
+                    "industry": company_name,
+                    "logo_url": image,
+                }
+            )
+        except Exception as e:
+            data.append(
+                {
+                    "symbol": ticker,
+                    "price": "N/A",
+                    "change_percent": "N/A",
+                    "market_cap": "N/A",
+                    "sector": "N/A",
+                    "industry": "N/A",
+                    "logo_url": "N/A",
+                }
+            )
+
+    return data
+
+
 def fetch_historical_data(symbol, currency):
     # symbol = symbol["symbol"]
     try:

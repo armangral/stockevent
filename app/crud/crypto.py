@@ -8,6 +8,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
     data = []
 
     for symbol in symbols:
+        symbol = symbol["symbol"]
         try:
             crypto = yf.Ticker(f"{symbol}-{currency}")
             history = crypto.history(period="1d", interval="1h").iloc[-1]
@@ -39,6 +40,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
 
 
 def fetch_historical_data(symbol, currency):
+    symbol = symbol["symbol"]
     try:
         crypto = yf.Ticker(f"{symbol}-{currency}")
         timeframes = {

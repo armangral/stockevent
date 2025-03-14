@@ -2,7 +2,7 @@ import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import yfinance as yf
-
+from forex_python.converter import CurrencyRates
 
 
 async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency: str):
@@ -79,8 +79,10 @@ async def fetch_stock_data_crud(db: AsyncSession, tickers: List[str]):
             
     return data
 
-async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str],currency:str):
+async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str], currency="USD"):
     data = []
+    c = CurrencyRates()
+    usd_to_gbp_rate = c.get_rate("USD", "GBP") if currency == "GBP" else 1.0
 
     for ticker_info in tickers:
         image = ticker_info["logo_url"]
@@ -88,19 +90,20 @@ async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str],currenc
         company_name = ticker_info["company_name"]
 
         try:
-            stock = yf.Ticker(f"{ticker}-{currency}")
+            stock = yf.Ticker(ticker)
             history = stock.history(period="1d").iloc[-1]
             info = stock.info
 
-            # Only the specified fields
+            price = round(history["Close"] * usd_to_gbp_rate, 2)
+
             data.append(
                 {
                     "symbol": ticker,
-                    "price": round(history["Close"], 2),
+                    "price": price,
                     "change_percent": round(
                         info.get("regularMarketChangePercent", 0) * 100, 2
                     ),
-                    "market_cap": round(info.get("marketCap", 0)),
+                    "market_cap": round(info.get("marketCap", 0) * usd_to_gbp_rate),
                     "sector": info.get("sector", "N/A"),
                     "industry": company_name,
                     "logo_url": image,

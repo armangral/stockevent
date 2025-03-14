@@ -1765,7 +1765,7 @@ async def get_stock_data_gbp(
         },
     ][skip : skip + limit]
 
-    data = await fetch_stock_data_crud_gbp(db, stock_symbols,"GBP")
+    data = await fetch_stock_data_crud_gbp(db, stock_symbols, currency='GBP')
     if not data:
         raise HTTPException(status_code=404, detail="No data found")
 

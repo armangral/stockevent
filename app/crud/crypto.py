@@ -12,8 +12,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
     for symbol in symbols:
         a = symbol["id"]
         url = f"https://api.coingecko.com/api/v3/coins/{a}"
-        response = requests.get(url).json()
-        print(f"response is {response}")
+        response = requests.get(url).json()["image"]["large"]
         symbol = symbol["symbol"]
 
         try:
@@ -29,7 +28,7 @@ async def fetch_crypto_data_crud(db: AsyncSession, symbols: List[str], currency:
                     "change_percent": round(
                         info.get("regularMarketChangePercent", 0), 2
                     ),
-                    "logo_url": response["image"]["large"],  # Fetching logo URL
+                    "logo_url": response,  # Fetching logo URL
                 }
             )
         except Exception:

@@ -6,9 +6,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from tempfile import NamedTemporaryFile
 
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 import jinja2
 import pdfkit
+from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -140,10 +141,14 @@ async def send_welcome_email(to_email: str, password: str):
     await fm.send_message(message, template_name="welcome.html")
 
 
+async def send_email_alert(email: EmailStr, subject: str, body: str):
+    message = MessageSchema(
+        subject=subject, recipients=[email], body=body, subtype=MessageType.plain
+    )
 
-
-
-
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    return {"status": "Email sent successfully"}
 
 
 async def send_property_email(to_email: str, property_details: dict):

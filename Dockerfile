@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y wkhtmltopdf
 RUN useradd -m celery_user
 USER celery_user
 
+RUN pip3 install celery
+
 WORKDIR /app
 
 COPY requirements.txt requirements.txt

@@ -21,5 +21,5 @@ class User(Base,SharedMixin):
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # # Social login fields
-    # social_id: Mapped[str] = mapped_column(String(255), nullable=True)
-    # social_provider: Mapped[str] = mapped_column(String(50), nullable=True)
+    social_id: Mapped[str] = mapped_column(String(255), nullable=True)
+    social_provider: Mapped[str] = mapped_column(String(50), nullable=True)

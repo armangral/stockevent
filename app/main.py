@@ -116,68 +116,68 @@ async def root():
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Replace these with your own values from the Google Developer Console
-# GOOGLE_CLIENT_ID = settings.CLIENT_ID
-# GOOGLE_CLIENT_SECRET = settings.CLIENT_SECRET
-# GOOGLE_REDIRECT_URI = settings.REDIRECT_URI
+GOOGLE_CLIENT_ID = settings.CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.CLIENT_SECRET
+GOOGLE_REDIRECT_URI = settings.REDIRECT_URI
 
 
-# @app.get("/login/google")
-# async def login_google():
-#     return {
-#         "url": f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&scope=openid%20profile%20email&access_type=offline"
-#     }
+@app.get("/login/google")
+async def login_google():
+    return {
+        "url": f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&scope=openid%20profile%20email&access_type=offline"
+    }
 
 
-# @app.get("/auth/callback")
-# async def auth_google(code: str, db: AsyncSession = Depends(get_session)):
-#     token_url = "https://accounts.google.com/o/oauth2/token"
-#     data = {
-#         "code": code,
-#         "client_id": GOOGLE_CLIENT_ID,
-#         "client_secret": GOOGLE_CLIENT_SECRET,
-#         "redirect_uri": GOOGLE_REDIRECT_URI,
-#         "grant_type": "authorization_code",
-#     }
-#     response = requests.post(token_url, data=data)
-#     access_token = response.json().get("access_token")
-#     user_info = requests.get(
-#         "https://www.googleapis.com/oauth2/v1/userinfo",
-#         headers={"Authorization": f"Bearer {access_token}"},
-#     )
-#     user_info = user_info.json()
-#     print("user_info", user_info)
-#     #Check if user already exists
-#     user = await get_user_by_social_id(db, social_id=user_info['id'], provider="google")
+@app.get("/auth/callback")
+async def auth_google(code: str, db: AsyncSession = Depends(get_session)):
+    token_url = "https://accounts.google.com/o/oauth2/token"
+    data = {
+        "code": code,
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "grant_type": "authorization_code",
+    }
+    response = requests.post(token_url, data=data)
+    access_token = response.json().get("access_token")
+    user_info = requests.get(
+        "https://www.googleapis.com/oauth2/v1/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    user_info = user_info.json()
+    print("user_info", user_info)
+    #Check if user already exists
+    user = await get_user_by_social_id(db, social_id=user_info['id'], provider="google")
 
-#     print("user is ",user)
-#     if not user:
-#         # Create a new user if not found
-#         user = await create_social_user(db, user_info, "google")
+    print("user is ",user)
+    if not user:
+        # Create a new user if not found
+        user = await create_social_user(db, user_info, "google")
 
-#     jwt_client_access_timedelta = timedelta(
-#         minutes=settings.CRYPTO_JWT_ACESS_TIMEDELTA_MINUTES
-#     )
-#     data_to_be_encoded = {
-#         "email": user.username,
-#         "type": "acess_token",
-#     }
+    jwt_client_access_timedelta = timedelta(
+        minutes=settings.CRYPTO_JWT_ACESS_TIMEDELTA_MINUTES
+    )
+    data_to_be_encoded = {
+        "email": user.username,
+        "type": "acess_token",
+    }
 
-#     new_jwt_access = generate_jwt(
-#         data={"sub": json.dumps(data_to_be_encoded)},
-#         expires_delta=jwt_client_access_timedelta,
-#     )
+    new_jwt_access = generate_jwt(
+        data={"sub": json.dumps(data_to_be_encoded)},
+        expires_delta=jwt_client_access_timedelta,
+    )
 
-#     user.last_login = datetime.now()
+    user.last_login = datetime.now()
 
-#     print("user.last_login", user.last_login)
+    print("user.last_login", user.last_login)
 
-#     await db.commit()
+    await db.commit()
 
-#     return {
-#         "access_token": new_jwt_access,
-#         "token_type": "bearer",
-#         "is_superadmin": user.is_super_admin,
-#     }
+    return {
+        "access_token": new_jwt_access,
+        "token_type": "bearer",
+        "is_superadmin": user.is_super_admin,
+    }
 
 
 

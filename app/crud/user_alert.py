@@ -4,8 +4,8 @@ from sqlalchemy import select
 from app.models.user_alert import UserAlert
 from app.schemas.user_alert import UserAlertCreate
 from app.utils import send_email_alert
-from celery import Celery
 import yfinance as yf
+from celery_config import celery
 
 
 # Create Alert
@@ -33,7 +33,7 @@ async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate):
 
 
 
-celery = Celery(__name__, broker="redis://redis:6379/0")
+# celery = Celery(__name__, broker="redis://redis:6379/0")
 
 
 @celery.task

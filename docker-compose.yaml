@@ -51,7 +51,7 @@ services:
       - "8012:8000"
     depends_on:
       - dbstock
-      - redis
+
     restart: on-failure
     networks:
       - app_network_stockevent
@@ -87,8 +87,8 @@ services:
 volumes:
   postgres_data_stockevent:
     driver: local
-  redis_data_stockevent:
-    driver: local  # Ensures Redis data is stored persistently
+  # redis_data_stockevent:
+  #   driver: local  # Ensures Redis data is stored persistently
 
 networks:
   app_network_stockevent:

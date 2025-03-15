@@ -5,13 +5,6 @@ ENV PYTHONUNBUFFERED=1
 # Install necessary dependencies
 RUN apt-get update && apt-get install -y wkhtmltopdf
 
-# Install Celery BEFORE switching users
-RUN pip3 install celery
-
-# Create a non-root user
-RUN useradd -m celery_user
-USER celery_user
-
 WORKDIR /app
 
 COPY requirements.txt requirements.txt

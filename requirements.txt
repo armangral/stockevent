@@ -124,3 +124,5 @@ websockets==12.0
 wrapt==1.16.0
 yarl==1.9.4
 yfinance==0.2.54
+redis
+kombu

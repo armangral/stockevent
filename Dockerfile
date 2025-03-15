@@ -7,6 +7,9 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y wkhtmltopdf
 
+# Create a non-root user
+RUN useradd -m celery_user
+USER celery_user
 
 WORKDIR /app
 

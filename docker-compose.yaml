@@ -61,7 +61,7 @@ services:
   celery:
     container_name: celery_worker_stockevent
     build: .
-    command: celery -A celery_config worker --loglevel=info --uid=nobody
+    command: bash -c "celery -A celery_config worker --loglevel=info"
     depends_on:
       - redis
       - app
@@ -74,7 +74,7 @@ services:
   celery-beat:
     container_name: celery_beat_stockevent
     build: .
-    command: celery -A celery_config beat --loglevel=info --uid=nobody
+    command: bash -c "celery -A celery_config beat --loglevel=info"
     depends_on:
       - redis
       - celery

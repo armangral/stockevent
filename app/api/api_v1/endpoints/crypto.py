@@ -59,9 +59,9 @@ async def get_stock_data_usd(
     skip: int = Query(0, alias="offset"),
     limit: int = Query(10),
 ):
-    stock_symbols[skip : skip + limit]
+    
 
-    data = await fetch_stock_data_crud(db, stock_symbols)
+    data = await fetch_stock_data_crud(db, stock_symbols[skip : skip + limit])
     if not data:
         raise HTTPException(status_code=404, detail="No data found")
 
@@ -86,9 +86,11 @@ async def get_stock_data_gbp(
     skip: int = Query(0, alias="offset"),
     limit: int = Query(10),
 ):
-    stock_symbols[skip : skip + limit]
+    
 
-    data = await fetch_stock_data_crud_gbp(db, stock_symbols, currency='GBP')
+    data = await fetch_stock_data_crud_gbp(
+        db, stock_symbols[skip : skip + limit], currency="GBP"
+    )
     if not data:
         raise HTTPException(status_code=404, detail="No data found")
 

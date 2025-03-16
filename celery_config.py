@@ -1,4 +1,5 @@
 from celery import Celery
+import celery_beat_config
 
 celery = Celery(
     "worker",

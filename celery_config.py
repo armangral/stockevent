@@ -10,7 +10,7 @@ celery = Celery(
 
 celery.conf.update(
     task_routes={
-        "app.crud.user_alert.*": {"queue": "default"},
+        "app.crud.user_alert.*": {"queue": "celery"},
     },
     timezone="UTC",
     enable_utc=True,

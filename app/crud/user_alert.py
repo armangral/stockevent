@@ -41,6 +41,7 @@ async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate):
 @celery.task
 def run_price_check():
     # Use a synchronous DB session here since Celery tasks are not async
+    print("starting cleery alerts")
     with SessionLocal() as db:
         alerts = db.execute(select(UserAlert).where(UserAlert.is_active == True))
         alerts = alerts.scalars().all()

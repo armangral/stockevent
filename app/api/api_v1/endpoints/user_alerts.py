@@ -17,4 +17,4 @@ async def set_price_alert(
 @router.get("/check/")
 async def run_check(db: AsyncSession = Depends(get_session)):
     await run_price_check(db).delay()  # Manually trigger the Celery task
-    return {"message": "Price check task started"}
+    return {"message": "Price check task started now"}

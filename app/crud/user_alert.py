@@ -42,12 +42,12 @@ async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate):
 @celery.task
 def run_price_check():
     print("Starting celery alerts",flush=True)
-    asyncio.run(
-    send_email_alert(
-       "abdulrehmanb8631@gmail.com",
-        "Alert!",
-        "btc has reached maximum!",
-    ))
+    # asyncio.run(
+    # send_email_alert(
+    #    "abdulrehmanb8631@gmail.com",
+    #     "Alert!",
+    #     "btc has reached maximum!",
+    # ))
     with SyncSessionLocal() as db:
         alerts = (
             db.execute(select(UserAlert).where(UserAlert.is_active == True))

@@ -26,7 +26,7 @@ async def set_price_alert(
     db: AsyncSession = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
-    return await create_user_alert(db, alert,user.email)
+    return await create_user_alert(db, alert,user.username)
 
 
 @router.get("/check/")

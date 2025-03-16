@@ -24,7 +24,7 @@ async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate,email:
         raise HTTPException(status_code=400, detail="Alert already exists")
 
     alert = UserAlert(
-        email=alert_data.email,
+        email=email,
         symbol=alert_data.symbol.upper(),
         target_price=alert_data.target_price,
     )
@@ -58,7 +58,7 @@ def run_price_check():
 
         for alert in alerts:
             stock_data = yf.Ticker(alert.symbol).info
-            current_price = stock_data.get("currentPrice")
+            current_price = stock_data.get("regularMarketPrice")
 
             print("Checking the price from celery now", flush=True)
 

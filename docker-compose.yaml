@@ -37,7 +37,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis_data_stockevent:/data  # Persist Redis data
+      - redis_data_stockevent_abc:/data  # Persist Redis data
     networks:
       - app_network_stockevent
 
@@ -87,7 +87,7 @@ services:
 volumes:
   postgres_data_stockevent:
     driver: local
-  redis_data_stockevent:
+  redis_data_stockevent_abc:
     driver: local  # Ensures Redis data is stored persistently
 
 networks:

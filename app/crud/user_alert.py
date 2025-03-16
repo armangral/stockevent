@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -41,11 +42,12 @@ async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate):
 @celery.task
 def run_price_check():
     print("Starting celery alerts",flush=True)
+    asyncio.run(
     send_email_alert(
        "abdulrehmanb8631@gmail.com",
         "Alert!",
         "btc has reached maximum!",
-    )
+    ))
     with SyncSessionLocal() as db:
         alerts = (
             db.execute(select(UserAlert).where(UserAlert.is_active == True))
@@ -57,16 +59,20 @@ def run_price_check():
             stock_data = yf.Ticker(alert.symbol).info
             current_price = stock_data.get("currentPrice")
 
-            print("Checking the price from celery now")
+            print("Checking the price from celery now", flush=True)
 
             if current_price and current_price >= alert.target_price:
-                send_email_alert(
-                    alert.email,
-                    f"{alert.symbol} Alert!",
-                    f"{alert.symbol} has reached ${alert.target_price}!",
+                asyncio.run(
+                    send_email_alert(  # Run async function safely
+                        alert.email,
+                        f"{alert.symbol} Alert!",
+                        f"{alert.symbol} has reached ${alert.target_price}!",
+                    )
                 )
                 alert.is_active = False
                 db.commit()
+
+    print("Finished checking alerts", flush=True)
 
 
 # @celery.task

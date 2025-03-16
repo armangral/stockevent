@@ -141,23 +141,16 @@ async def send_welcome_email(to_email: str, password: str):
     await fm.send_message(message, template_name="welcome.html")
 
 
-# async def send_email_alert(email: EmailStr, subject: str, body: str):
-#     message = MessageSchema(
-#         subject=subject, recipients=[email], body=body, subtype=MessageType.plain
-#     )
-
-#     fm = FastMail(conf)
-#     await fm.send_message(message)
-#     return {"status": "Email sent successfully"}
-
-def send_email_alert(email: EmailStr, subject: str, body: str):
+async def send_email_alert(email: EmailStr, subject: str, body: str):
     message = MessageSchema(
         subject=subject, recipients=[email], body=body, subtype=MessageType.plain
     )
 
     fm = FastMail(conf)
-    fm.send_message(message)
+    await fm.send_message(message)
     return {"status": "Email sent successfully"}
+
+
 
 
 async def send_property_email(to_email: str, property_details: dict):

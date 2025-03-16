@@ -17,9 +17,10 @@ async def get_crypto_data_usd(
     limit: int = Query(10),
 ):
     
-    crypto_symbols[skip : skip + limit]
 
-    data = await fetch_crypto_data_crud(db, crypto_symbols, currency="USD")
+    data = await fetch_crypto_data_crud(
+        db, crypto_symbols[skip : skip + limit], currency="USD"
+    )
     if not data:
         raise HTTPException(status_code=404, detail="No data found")
 
@@ -32,9 +33,11 @@ async def get_crypto_data_gbp(
     skip: int = Query(0, alias="offset"),
     limit: int = Query(10),
 ):
-    crypto_symbols[skip : skip + limit]
+    
 
-    data = await fetch_crypto_data_crud(db, crypto_symbols, currency="GBP")
+    data = await fetch_crypto_data_crud(
+        db, crypto_symbols[skip : skip + limit], currency="GBP"
+    )
     if not data:
         raise HTTPException(status_code=404, detail="No data found")
 

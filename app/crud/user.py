@@ -166,6 +166,17 @@ async def create_social_user(db: AsyncSession, userinfo: dict, provider: str) ->
     await db.refresh(user)
     return user
 
+async def create_social_user_id_and_provider(db: AsyncSession, userinfo: dict, provider: str) -> User:
+    user = User(
+        social_id=userinfo["id"],
+        social_provider=provider
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
 async def delete_user(db: AsyncSession, user_id: UUID):
     # Check if the user exists
     query = select(User).where(User.id == user_id)

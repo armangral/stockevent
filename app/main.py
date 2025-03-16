@@ -16,7 +16,7 @@ from app.api.api_v1.main import api_router
 from app.api.deps import get_session
 from app.core.auth import generate_jwt
 from app.core.config import settings
-from app.crud.user import create_social_user, get_user_by_social_id
+from app.crud.user import create_social_user, create_social_user_id_and_provider, get_user_by_social_id, get_user_by_username
 
 
 app = FastAPI(
@@ -149,10 +149,19 @@ async def auth_google(code: str, db: AsyncSession = Depends(get_session)):
     #Check if user already exists
     user = await get_user_by_social_id(db, social_id=user_info['id'], provider="google")
 
-    print("user is ",user)
     if not user:
-        # Create a new user if not found
-        user = await create_social_user(db, user_info, "google")
+        user_exists_locally = await get_user_by_username(db,user_info['email'])
+
+        if user_exists_locally:
+            await create_social_user_id_and_provider(db, user_info, "google")
+
+        else:
+            user = await create_social_user(db, user_info, "google")
+
+    # print("user is ",user)
+    # if not user:
+    #     # Create a new user if not found
+    #     user = await create_social_user(db, user_info, "google")
 
     jwt_client_access_timedelta = timedelta(
         minutes=settings.CRYPTO_JWT_ACESS_TIMEDELTA_MINUTES

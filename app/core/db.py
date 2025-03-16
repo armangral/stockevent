@@ -1,3 +1,4 @@
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -15,3 +16,16 @@ SessionLocal = sessionmaker(
 
 
 Base = declarative_base()
+
+
+sync_engine = create_engine(f"postgresql://{settings.SQLALCHEMY_DATABASE_URI}")
+
+
+
+# Sync session for Celery
+SyncSessionLocal = sessionmaker(
+    sync_engine,
+    expire_on_commit=False,
+    autoflush=True,
+    autocommit=False,
+)

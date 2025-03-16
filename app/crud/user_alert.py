@@ -67,7 +67,7 @@ def run_price_check():
                     send_email_alert(  # Run async function safely
                         alert.email,
                         f"{alert.symbol} Alert!",
-                        f"{alert.symbol} has reached ${alert.target_price}!",
+                        f"{alert.symbol} has reached more than ${alert.target_price}. Now its price is at {current_price}!",
                     )
                 )
                 alert.is_active = False

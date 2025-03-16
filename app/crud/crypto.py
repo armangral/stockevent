@@ -79,6 +79,54 @@ async def fetch_stock_data_crud(db: AsyncSession, tickers: List[str]):
             
     return data
 
+
+async def fetch_stock_data_crud_with_positions(db: AsyncSession, tickers: List[str]):
+    data = []
+
+    for ticker_info in tickers:
+        image = ticker_info["logo_url"]
+        ticker = ticker_info["symbol"]
+        company_name = ticker_info["company_name"]
+
+        try:
+            stock = yf.Ticker(ticker)
+            history = stock.history(period="1d").iloc[-1]
+            info = stock.info
+
+            # Including open and close prices
+            data.append(
+                {
+                    "symbol": ticker,
+                    "price": round(history["Close"], 2),
+                    "open": round(history["Open"], 2),
+                    "close": round(history["Close"], 2),
+                    "change_percent": round(
+                        info.get("regularMarketChangePercent", 0) * 100, 2
+                    ),
+                    "market_cap": round(info.get("marketCap", 0)),
+                    "sector": info.get("sector", "N/A"),
+                    "industry": company_name,
+                    "logo_url": image,
+                }
+            )
+        except Exception as e:
+            data.append(
+                {
+                    "symbol": ticker,
+                    "price": "N/A",
+                    "open": "N/A",
+                    "close": "N/A",
+                    "change_percent": "N/A",
+                    "market_cap": "N/A",
+                    "sector": "N/A",
+                    "industry": "N/A",
+                    "logo_url": "N/A",
+                }
+            )
+
+    return data
+
+
 async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str], currency="USD"):
     data = []
 
@@ -121,6 +169,58 @@ async def fetch_stock_data_crud_gbp(db: AsyncSession, tickers: List[str], curren
                 {
                     "symbol": ticker,
                     "price": "N/A",
+                    "change_percent": "N/A",
+                    "market_cap": "N/A",
+                    "sector": "N/A",
+                    "industry": "N/A",
+                    "logo_url": "N/A",
+                }
+            )
+
+    return data
+
+async def fetch_stock_data_crud_gbp_with_positions(
+    db: AsyncSession, tickers: List[str], currency="USD"
+):
+    data = []
+
+    # Fetch USD to GBP conversion using yfinance
+    usd_to_gbp_rate = 1 / yf.Ticker("GBPUSD=X").history(period="1d")["Close"].iloc[-1]
+
+    for ticker_info in tickers:
+        image = ticker_info["logo_url"]
+        ticker = ticker_info["symbol"]
+        company_name = ticker_info["company_name"]
+
+        try:
+            stock = yf.Ticker(ticker)
+            history = stock.history(period="1d").iloc[-1]
+            info = stock.info
+
+            price = round(history["Close"] * usd_to_gbp_rate, 2)
+
+            data.append(
+                {
+                    "symbol": ticker,
+                    "price": price,
+                    "open": round(history["Open"] * usd_to_gbp_rate, 2),
+                    "close": round(history["Close"] * usd_to_gbp_rate, 2),
+                    "change_percent": round(
+                        info.get("regularMarketChangePercent", 0) * 100, 2
+                    ),
+                    "market_cap": round(info.get("marketCap", 0) * usd_to_gbp_rate),
+                    "sector": info.get("sector", "N/A"),
+                    "industry": company_name,
+                    "logo_url": image,
+                }
+            )
+        except Exception as e:
+            data.append(
+                {
+                    "symbol": ticker,
+                    "price": "N/A",
+                    "open": "N/A",
+                    "close": "N/A",
                     "change_percent": "N/A",
                     "market_cap": "N/A",
                     "sector": "N/A",

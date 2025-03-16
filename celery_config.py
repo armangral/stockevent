@@ -2,8 +2,8 @@ from celery import Celery
 
 celery = Celery(
     "worker",
-    broker="redis://redis_stockevent:6379/0",  # Use service name in Docker Compose as hostname
-    backend="redis://redis_stockevent:6379/0",
+    broker="redis://redis:6379/0",  # Use service name in Docker Compose as hostname
+    backend="redis://redis:6379/0",
     include=["app.crud.user_alert"],
 )
 

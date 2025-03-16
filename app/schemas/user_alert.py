@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel, EmailStr
 
 
@@ -8,7 +9,7 @@ class UserAlertCreate(BaseModel):
 
 
 class UserAlertResponse(BaseModel):
-    id: int
+    id: UUID
     email: str
     symbol: str
     target_price: float

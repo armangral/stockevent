@@ -3,7 +3,6 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserAlertCreate(BaseModel):
-    email: EmailStr
     symbol: str
     target_price: float
 

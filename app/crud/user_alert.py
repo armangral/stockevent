@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import HTTPException
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.db import SessionLocal, SyncSessionLocal
@@ -11,10 +12,10 @@ from celery_config import celery
 
 
 # Create Alert
-async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate):
+async def create_user_alert(db: AsyncSession, alert_data: UserAlertCreate,email:EmailStr):
     existing_alert = await db.execute(
         select(UserAlert).where(
-            UserAlert.email == alert_data.email,
+            UserAlert.email == email,
             UserAlert.symbol == alert_data.symbol.upper(),
             UserAlert.target_price == alert_data.target_price,
         )

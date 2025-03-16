@@ -22,9 +22,11 @@ async def get_user_alerts(
 
 @router.post("/", response_model=UserAlertResponse)
 async def set_price_alert(
-    alert: UserAlertCreate, db: AsyncSession = Depends(get_session)
+    alert: UserAlertCreate,
+    db: AsyncSession = Depends(get_session),
+    user: User = Depends(get_current_user),
 ):
-    return await create_user_alert(db, alert)
+    return await create_user_alert(db, alert,user.email)
 
 
 @router.get("/check/")

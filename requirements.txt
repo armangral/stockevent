@@ -126,3 +126,5 @@ yarl==1.9.4
 yfinance==0.2.54
 redis
 kombu
+psycopg2-binary
+psycopg2

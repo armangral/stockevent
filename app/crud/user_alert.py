@@ -49,6 +49,8 @@ def run_price_check():
             stock_data = yf.Ticker(alert.symbol).info
             current_price = stock_data.get("currentPrice")
 
+            print("Checking the price from cleery now")
+
             if current_price and current_price >= alert.target_price:
                 send_email_alert(  # Sync version here
                     alert.email,

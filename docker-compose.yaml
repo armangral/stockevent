@@ -14,21 +14,21 @@ services:
     env_file:
       - ./.env
 
-  # pgadmin:
-  #   container_name: pgadmin_stockevent
-  #   image: dpage/pgadmin4:latest
-  #   restart: always
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-  #   ports:
-  #     - "5060:80"
-  #   depends_on:
-  #     - dbstock
-  #   networks:
-  #     - app_network_stockevent
-  #   env_file:
-  #     - ./.env
+  pgadmin:
+    container_name: pgadmin_stockevent
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5051:80"
+    depends_on:
+      - dbstock
+    networks:
+      - app_network_stockevent
+    env_file:
+      - ./.env
 
   # redis:
   #   container_name: redis_stockevent

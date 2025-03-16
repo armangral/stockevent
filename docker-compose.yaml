@@ -14,32 +14,32 @@ services:
     env_file:
       - ./.env
 
-  pgadmin:
-    container_name: pgadmin_stockevent
-    image: dpage/pgadmin4:latest
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-    ports:
-      - "5060:80"
-    depends_on:
-      - dbstock
-    networks:
-      - app_network_stockevent
-    env_file:
-      - ./.env
+  # pgadmin:
+  #   container_name: pgadmin_stockevent
+  #   image: dpage/pgadmin4:latest
+  #   restart: always
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+  #   ports:
+  #     - "5060:80"
+  #   depends_on:
+  #     - dbstock
+  #   networks:
+  #     - app_network_stockevent
+  #   env_file:
+  #     - ./.env
 
-  redis:
-    container_name: redis_stockevent
-    image: redis:latest
-    restart: always
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data_stockevent:/data  # Persist Redis data
-    networks:
-      - app_network_stockevent
+  # redis:
+  #   container_name: redis_stockevent
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data_stockevent:/data  # Persist Redis data
+  #   networks:
+  #     - app_network_stockevent
 
   app:
     container_name: app_stockevent
@@ -58,37 +58,37 @@ services:
     env_file:
       - ./.env
 
-  celery:
-    container_name: celery_worker_stockevent
-    build: .
-    command: bash -c "celery -A celery_config worker --loglevel=info"
-    depends_on:
-      - redis
-      - app
-    restart: always
-    networks:
-      - app_network_stockevent
-    env_file:
-      - ./.env
+  # celery:
+  #   container_name: celery_worker_stockevent
+  #   build: .
+  #   command: bash -c "celery -A celery_config worker --loglevel=info"
+  #   depends_on:
+  #     - redis
+  #     - app
+  #   restart: always
+  #   networks:
+  #     - app_network_stockevent
+  #   env_file:
+  #     - ./.env
 
-  celery-beat:
-    container_name: celery_beat_stockevent
-    build: .
-    command: bash -c "celery -A celery_config beat --loglevel=info"
-    depends_on:
-      - redis
-      - celery
-    restart: always
-    networks:
-      - app_network_stockevent
-    env_file:
-      - ./.env
+  # celery-beat:
+  #   container_name: celery_beat_stockevent
+  #   build: .
+  #   command: bash -c "celery -A celery_config beat --loglevel=info"
+  #   depends_on:
+  #     - redis
+  #     - celery
+  #   restart: always
+  #   networks:
+  #     - app_network_stockevent
+  #   env_file:
+  #     - ./.env
 
 volumes:
   postgres_data_stockevent:
     driver: local
-  redis_data_stockevent:
-    driver: local  # Ensures Redis data is stored persistently
+  # redis_data_stockevent:
+  #   driver: local  # Ensures Redis data is stored persistently
 
 networks:
   app_network_stockevent:

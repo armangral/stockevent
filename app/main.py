@@ -153,7 +153,7 @@ async def auth_google(code: str, db: AsyncSession = Depends(get_session)):
         user_exists_locally = await get_user_by_username(db,user_info['email'])
 
         if user_exists_locally:
-            await create_social_user_id_and_provider(db, user_info, "google")
+            await create_social_user_id_and_provider(db, user_exists_locally,user_info, "google")
 
         else:
             user = await create_social_user(db, user_info, "google")

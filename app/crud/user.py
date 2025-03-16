@@ -166,12 +166,10 @@ async def create_social_user(db: AsyncSession, userinfo: dict, provider: str) ->
     await db.refresh(user)
     return user
 
-async def create_social_user_id_and_provider(db: AsyncSession, userinfo: dict, provider: str) -> User:
-    user = User(
-        social_id=userinfo["id"],
-        social_provider=provider
-    )
-    db.add(user)
+async def create_social_user_id_and_provider(db: AsyncSession, user: User,userinfo: dict, provider: str) -> User:
+    
+    user.social_id = userinfo["id"]
+    user.social_provider = provider
     await db.commit()
     await db.refresh(user)
     return user

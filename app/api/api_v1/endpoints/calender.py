@@ -94,6 +94,7 @@ async def get_forex_data(
     try:
         month = month.lower()[:3]  # Ensure month is in short format (e.g., 'mar')
         url = f"https://www.forexfactory.com/calendar?day={month}{day}.{year}"
+        print("url is ",url)
         driver = create_driver()
         value_list = parse_data(driver, url)
 

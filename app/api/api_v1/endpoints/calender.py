@@ -97,6 +97,12 @@ async def get_forex_data(
         driver = create_driver()
         value_list = parse_data(driver, url)
 
+        for value in value_list:
+            print(f"Date: {value[0]}")
+            print(
+                f"  Time: {value[1]} | Currency: {value[2]} | Event: {value[3]} | Actual: {value[4] if len(value) > 4 else 'N/A'} | Forecast: {value[5] if len(value) > 5 else 'N/A'} | Previous: {value[6] if len(value) > 6 else 'N/A'}"
+            )
+
         # Convert to JSON format
         json_output = [
             {

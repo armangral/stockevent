@@ -66,10 +66,10 @@ def parse_data(driver, url):
 
 
 driver = create_driver()
-url = "https://www.forexfactory.com/calendar?day=mar20.2024"
+url = "https://www.forexfactory.com/calendar?day=mar20.2025"
 
 value_list = parse_data(driver=driver, url=url)
-print(value_list)
+
 
 # Display formatted output
 for value in value_list:

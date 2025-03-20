@@ -21,7 +21,7 @@ def create_driver():
     browser_options.add_argument("--disable-gpu")
     browser_options.add_argument(f"user-agent={user_agent}")
 
-    # Explicitly set the path to Chromedriver
+    # Explicitly set the path to Chromedriver now
     chromedriver_path = "/usr/local/bin/chromedriver"
     service = Service(executable_path=chromedriver_path)
 

@@ -1,8 +1,10 @@
 import random
-import selenium
+from fastapi import APIRouter, HTTPException, Query
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+
+router = APIRouter()
 
 
 def create_driver():
@@ -28,18 +30,12 @@ def create_driver():
     browser_options.add_argument(f"user-agent={user_agent}")
 
     service = Service(log_path="test.log")
-
     driver = webdriver.Chrome(service=service, options=browser_options)
-
     return driver
-
-
-from datetime import datetime
 
 
 def parse_data(driver, url):
     driver.get(url)
-
     data_table = driver.find_element(By.CLASS_NAME, "calendar__table")
     value_list = []
     current_date = None
@@ -51,29 +47,29 @@ def parse_data(driver, url):
         if not row_data:
             continue
 
-        # Handle date entries
         if "\n" in row_data[0]:
             current_date = row_data[0].replace("\n", " - ")
             continue
 
-        # Handle entries missing a time value
         if len(row_data) > 0 and not row_data[0][0].isdigit():
-            row_data.insert(0, "")  # Insert empty time value for consistency
+            row_data.insert(0, "")
 
         value_list.append([current_date] + row_data)
 
+    driver.quit()
     return value_list
 
 
-driver = create_driver()
-url = "https://www.forexfactory.com/calendar?day=mar20.2024"
+@router.get("/forex-data")
+async def get_forex_data(
+    day: int = Query(..., ge=1, le=31), month: str = Query(...), year: int = Query(...)
+):
+    try:
+        month = month.lower()[:3]  # Ensure month is in short format (e.g., 'mar')
+        url = f"https://www.forexfactory.com/calendar?day={month}{day}.{year}"
+        driver = create_driver()
+        value_list = parse_data(driver, url)
 
-value_list = parse_data(driver=driver, url=url)
-print(value_list)
-
-# Display formatted output
-for value in value_list:
-    print(f"Date: {value[0]}")
-    print(
-        f"  Time: {value[1]} | Currency: {value[2]} | Event: {value[3]} | Actual: {value[4] if len(value) > 4 else 'N/A'} | Forecast: {value[5] if len(value) > 5 else 'N/A'} | Previous: {value[6] if len(value) > 6 else 'N/A'}"
-    )
+        return {"data": value_list}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

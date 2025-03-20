@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
 ENV PYTHONUNBUFFERED=1
 
 # Install necessary dependencies
-RUN apt-get update && apt-get install -y wkhtmltopdf
+RUN apt-get update
 
 WORKDIR /app
 

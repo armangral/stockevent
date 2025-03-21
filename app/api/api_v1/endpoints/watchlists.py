@@ -113,6 +113,8 @@ async def get_holding_details(
     db: AsyncSession = Depends(get_session),
 ):
     holdings = await get_holding_by_symbol_crud(db, user.id, symbol)
+    if not holdings:
+        return []
     watchlist = await get_watchlist_by_id(db, holdings.watchlist_id)
     if not watchlist:
         raise HTTPException(status_code=404, detail="Watchlist not found")

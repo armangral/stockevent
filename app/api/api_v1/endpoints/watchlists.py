@@ -35,8 +35,8 @@ async def edit_holding(
     
     if watchlist.type == 'stocks':
         current_price = await get_current_price_stock(f"{watchlist.symbol}")
-
-    current_price = await get_current_price(f"{watchlist.symbol}")
+    else:
+        current_price = await get_current_price(f"{watchlist.symbol}")
     holding_data = await update_holding(db, watchlist.id, holding_data,current_price)
     holding_data_dict = vars(holding_data)
     pnl = (current_price-holding_data_dict['average_cost'])*holding_data_dict['shares']
@@ -124,8 +124,8 @@ async def get_holding_details(
 
     if watchlist.type == 'stocks':
         current_price = await get_current_price_stock(f"{watchlist.symbol}")
-
-    current_price = await get_current_price(f"{watchlist.symbol}")
+    else:
+        current_price = await get_current_price(f"{watchlist.symbol}")
     holding_data_dict = vars(holdings)
     pnl = (current_price - holding_data_dict["average_cost"]) * holding_data_dict[
         "shares"

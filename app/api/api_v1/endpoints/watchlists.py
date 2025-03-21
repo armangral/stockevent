@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.crud.holdings import update_holding
-from app.crud.watchlists import create_watchlist, delete_symbol_from_watchlist, delete_watchlist, get_current_price, get_holding_by_symbol_crud, get_total_value_of_all_assets_crud, get_total_value_of_all_assets_crud_gbp, get_user_watchlist_id_crud, get_watchlist_by_id, get_watchlist_by_symbol
+from app.crud.watchlists import create_watchlist, delete_symbol_from_watchlist, delete_watchlist, get_current_price, get_holding_by_symbol_crud, get_stock_data, get_total_value_of_all_assets_crud, get_total_value_of_all_assets_crud_gbp, get_user_watchlist_id_crud, get_watchlist_by_id, get_watchlist_by_symbol
 from app.schemas.holdings import HoldingCreate, HoldingResponse
 from app.schemas.watchlists import WatchlistCreate, WatchlistResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -78,7 +78,21 @@ async def get_user_watchlist(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    return await get_user_watchlist_symbols_crud(db, user.id)
+    watchlists =  await get_user_watchlist_symbols_crud(db, user.id)
+    watchlist_data = []
+    for watchlist in watchlists:
+        current_data = await get_stock_data(f"{watchlist.symbol}",watchlist.type)
+        watchlist_data.append(current_data)
+    return watchlist_data
+    
+    # holding_data_dict = vars(holdings)
+    # pnl = (current_price - holding_data_dict["average_cost"]) * holding_data_dict[
+    #     "shares"
+    # ]
+    # holding_data_dict["pnl"] = pnl
+    # total_value = current_price * holding_data_dict["shares"]
+    # holding_data_dict["total_value"] = total_value
+    # return holding_data_dict
 
 
 @router.get("/watchlistid")
@@ -98,7 +112,21 @@ async def get_holding_details(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    return await get_holding_by_symbol_crud(db, user.id, symbol)
+    holdings = await get_holding_by_symbol_crud(db, user.id, symbol)
+    watchlist = await get_watchlist_by_id(db, holdings.watchlist_id)
+    if not watchlist:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    current_price = await get_current_price(f"{watchlist.symbol}")
+    holding_data_dict = vars(holdings)
+    pnl = (current_price - holding_data_dict["average_cost"]) * holding_data_dict[
+        "shares"
+    ]
+    holding_data_dict["pnl"] = pnl
+    total_value = current_price * holding_data_dict["shares"]
+    holding_data_dict["total_value"] = total_value
+    return holding_data_dict
+
 
 #get total value of all the assests not just one symbol
 @router.get("/totalvalue")

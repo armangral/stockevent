@@ -47,12 +47,32 @@ async def delete_watchlist(db: AsyncSession, watchlist_id: int):
     return watchlist
 
 
+# async def get_user_watchlist_symbols_crud(
+#     db: AsyncSession, user_id: UUID
+# ):
+#     query = select(Watchlist).where(Watchlist.user_id == user_id)
+#     result = await db.execute(query)
+#     return result.scalars().all()
+
+
 async def get_user_watchlist_symbols_crud(
     db: AsyncSession, user_id: UUID
-):
-    query = select(Watchlist.symbol, Watchlist.type).where(Watchlist.user_id == user_id)
+) -> List[Watchlist]:
+    """
+    Retrieve the watchlist symbols for a given user.
+
+    Args:
+        db (AsyncSession): Database session.
+        user_id (UUID): The ID of the user.
+
+    Returns:
+        List[Watchlist]: A list of watchlist entries for the user.
+    """
+
+    query = select(Watchlist).where(Watchlist.user_id == user_id)
     result = await db.execute(query)
-    return [(row[0], row[1]) for row in result.fetchall()]
+    return result.scalars().all()
+
 
 
 # async def get_user_watchlist_symbols_crud(db: AsyncSession, user_id: UUID) -> List[str]:
@@ -69,7 +89,7 @@ async def get_user_watchlist_id_crud(db: AsyncSession, user_id: UUID) -> UUID | 
 
 async def get_holding_by_symbol_crud(
     db: AsyncSession, user_id: UUID, symbol: str
-) -> HoldingResponse | None:
+):
     query = (
         select(Holding)
         .join(Watchlist, Holding.watchlist_id == Watchlist.id)
@@ -79,13 +99,7 @@ async def get_holding_by_symbol_crud(
     holding = result.scalar_one_or_none()
     if not holding:
         return None
-    return HoldingResponse(
-        symbol=symbol,
-        shares=holding.shares,
-        avg_cost=holding.average_cost,
-        total_pnl=holding.total_pnl,
-        total_value=holding.total_value,
-    )
+    return holding
 
 
 async def delete_symbol_from_watchlist(
@@ -140,6 +154,43 @@ async def get_total_value_of_all_assets_crud(db: AsyncSession, user_id: UUID):
         total_value += shares * current_price  # Compute total value
 
     return total_value
+
+
+
+
+
+async def get_stock_data(symbol: str,type:str) -> dict:
+    """
+    Fetches the current price, market cap, and 24-hour volume of a given stock symbol using yfinance.
+
+    :param symbol: Stock symbol (e.g., "AAPL", "TSLA").
+    :return: Dictionary with price, market cap, and 24-hour volume.
+    """
+    try:
+        stock = yf.Ticker(f"{symbol}-USD")
+        history = stock.history(period="1d")
+        price = history["Close"].iloc[-1] if not history.empty else 0.0
+
+        info = stock.info
+        market_cap = info.get("marketCap", 0.0)
+        volume = history["Volume"].iloc[-1] if not history.empty else 0.0
+
+        return {
+            "symbol": symbol.upper(),
+            "type": type,
+            "price": float(price),
+            "market_cap": float(market_cap),
+            "volume_24h": float(volume),
+        }
+    except Exception as e:
+        print(f"Error fetching data for {symbol}: {e}")
+        return {
+            "symbol": symbol.upper(),
+            "type": type,
+            "price": 0.0,
+            "market_cap": 0.0,
+            "volume_24h": 0.0,
+        }
 
 
 async def get_current_price(symbol: str) -> float:

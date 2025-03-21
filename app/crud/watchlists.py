@@ -167,6 +167,8 @@ async def get_stock_data(symbol: str,type:str) -> dict:
     :return: Dictionary with price, market cap, and 24-hour volume.
     """
     try:
+        if type == 'stocks':
+            stock = yf.Ticker(f"{symbol}")
         stock = yf.Ticker(f"{symbol}-USD")
         history = stock.history(period="1d")
         price = history["Close"].iloc[-1] if not history.empty else 0.0
@@ -210,7 +212,22 @@ async def get_current_price(symbol: str) -> float:
         print(f"Error fetching price for {symbol}: {e}")
         return 0.0  # Default to 0.0 in case of an error
     
+async def get_current_price_stock(symbol: str) -> float:
+    """
+    Fetches the current price of a given stock symbol using yfinance.
 
+    :param symbol: Stock symbol (e.g., "AAPL", "TSLA").
+    :return: Current price as a float.
+    """
+    try:
+        stock = yf.Ticker(f"{symbol}")
+        price = stock.history(period="1d")["Close"].iloc[
+            -1
+        ]  # Get the latest closing price
+        return float(price)
+    except Exception as e:
+        print(f"Error fetching price for {symbol}: {e}")
+        return 0.0  # Default to 0.0 in case of an error
 
 
 async def get_usd_to_gbp_rate():

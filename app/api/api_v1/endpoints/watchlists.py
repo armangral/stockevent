@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.crud.holdings import update_holding
-from app.crud.watchlists import create_watchlist, delete_symbol_from_watchlist, delete_watchlist, get_current_price, get_holding_by_symbol_crud, get_stock_data, get_total_value_of_all_assets_crud, get_total_value_of_all_assets_crud_gbp, get_user_watchlist_id_crud, get_watchlist_by_id, get_watchlist_by_symbol
+from app.crud.watchlists import create_watchlist, delete_symbol_from_watchlist, delete_watchlist, get_current_price, get_current_price_stock, get_holding_by_symbol_crud, get_stock_data, get_total_value_of_all_assets_crud, get_total_value_of_all_assets_crud_gbp, get_user_watchlist_id_crud, get_watchlist_by_id, get_watchlist_by_symbol
 from app.schemas.holdings import HoldingCreate, HoldingResponse
 from app.schemas.watchlists import WatchlistCreate, WatchlistResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,6 +33,9 @@ async def edit_holding(
     if not watchlist:
         raise HTTPException(status_code=404, detail="Watchlist not found")
     
+    if watchlist.type == 'stocks':
+        current_price = await get_current_price_stock(f"{watchlist.symbol}")
+
     current_price = await get_current_price(f"{watchlist.symbol}")
     holding_data = await update_holding(db, watchlist.id, holding_data,current_price)
     holding_data_dict = vars(holding_data)
@@ -118,6 +121,9 @@ async def get_holding_details(
     watchlist = await get_watchlist_by_id(db, holdings.watchlist_id)
     if not watchlist:
         raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    if watchlist.type == 'stocks':
+        current_price = await get_current_price_stock(f"{watchlist.symbol}")
 
     current_price = await get_current_price(f"{watchlist.symbol}")
     holding_data_dict = vars(holdings)

@@ -156,26 +156,34 @@ async def get_total_value_of_all_assets_crud(db: AsyncSession, user_id: UUID):
     return total_value
 
 
+import yfinance as yf
 
 
-
-async def get_stock_data(symbol: str,type:str) -> dict:
+async def get_stock_data(symbol: str, type: str) -> dict:
     """
     Fetches the current price, market cap, and 24-hour volume of a given stock symbol using yfinance.
-
-    :param symbol: Stock symbol (e.g., "AAPL", "TSLA").
-    :return: Dictionary with price, market cap, and 24-hour volume.
     """
     try:
-        if type == 'stocks':
-            stock = yf.Ticker(f"{symbol}")
-        stock = yf.Ticker(f"{symbol}-USD")
+        if type == "stocks":
+            print("type is stock")
+            stock = yf.Ticker(symbol)
+        else:
+            stock = yf.Ticker(f"{symbol}-USD")
+
         history = stock.history(period="1d")
-        price = history["Close"].iloc[-1] if not history.empty else 0.0
+        price = (
+            history["Close"].iloc[-1]
+            if not history.empty
+            else stock.info.get("previousClose", 0.0)
+        )
 
         info = stock.info
         market_cap = info.get("marketCap", 0.0)
-        volume = history["Volume"].iloc[-1] if not history.empty else 0.0
+        volume = (
+            history["Volume"].iloc[-1]
+            if not history.empty
+            else info.get("volume", info.get("averageVolume", 0.0))
+        )
 
         return {
             "symbol": symbol.upper(),
@@ -184,6 +192,7 @@ async def get_stock_data(symbol: str,type:str) -> dict:
             "market_cap": float(market_cap),
             "volume_24h": float(volume),
         }
+
     except Exception as e:
         print(f"Error fetching data for {symbol}: {e}")
         return {
@@ -193,6 +202,44 @@ async def get_stock_data(symbol: str,type:str) -> dict:
             "market_cap": 0.0,
             "volume_24h": 0.0,
         }
+
+
+# async def get_stock_data(symbol: str,type:str) -> dict:
+#     """
+#     Fetches the current price, market cap, and 24-hour volume of a given stock symbol using yfinance.
+
+#     :param symbol: Stock symbol (e.g., "AAPL", "TSLA").
+#     :return: Dictionary with price, market cap, and 24-hour volume.
+#     """
+#     try:
+#         if type == 'stocks':
+#             print("type is stock")
+#             stock = yf.Ticker(f"{symbol}")
+#         else:
+#             stock = yf.Ticker(f"{symbol}-USD")
+#         history = stock.history(period="1d")
+#         price = history["Close"].iloc[-1] if not history.empty else 0.0
+
+#         info = stock.info
+#         market_cap = info.get("marketCap", 0.0)
+#         volume = history["Volume"].iloc[-1] if not history.empty else 0.0
+
+#         return {
+#             "symbol": symbol.upper(),
+#             "type": type,
+#             "price": float(price),
+#             "market_cap": float(market_cap),
+#             "volume_24h": float(volume),
+#         }
+#     except Exception as e:
+#         print(f"Error fetching data for {symbol}: {e}")
+#         return {
+#             "symbol": symbol.upper(),
+#             "type": type,
+#             "price": 0.0,
+#             "market_cap": 0.0,
+#             "volume_24h": 0.0,
+#         }
 
 
 async def get_current_price(symbol: str) -> float:

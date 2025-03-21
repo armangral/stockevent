@@ -14,4 +14,5 @@ class Watchlist(Base, SharedMixin):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     symbol: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    type: Mapped[str] = mapped_column(String, nullable=False)
     holding: Mapped["Holding"] = relationship("Holding", back_populates="watchlist", uselist=False)

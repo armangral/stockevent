@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.crud.holdings import update_holding
-from app.crud.watchlists import create_watchlist, delete_symbol_from_watchlist, delete_watchlist, get_holding_by_symbol_crud, get_user_watchlist_id_crud, get_watchlist_by_id, get_watchlist_by_symbol
+from app.crud.watchlists import create_watchlist, delete_symbol_from_watchlist, delete_watchlist, get_current_price, get_holding_by_symbol_crud, get_total_value_of_all_assets_crud, get_total_value_of_all_assets_crud_gbp, get_user_watchlist_id_crud, get_watchlist_by_id, get_watchlist_by_symbol
 from app.schemas.holdings import HoldingCreate, HoldingResponse
 from app.schemas.watchlists import WatchlistCreate, WatchlistResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ async def add_to_watchlist(
     return f"symbol {watchlist_data.symbol} has been added to watchlist "
 
 
-@router.put("/watchlist/{symbol}/holding", response_model=HoldingResponse)
+@router.put("/watchlist/{symbol}/holding")
 async def edit_holding(
     symbol: str,
     holding_data: HoldingCreate,
@@ -32,8 +32,15 @@ async def edit_holding(
     watchlist = await get_watchlist_by_symbol(db, user.id, symbol)
     if not watchlist:
         raise HTTPException(status_code=404, detail="Watchlist not found")
-
-    return await update_holding(db, watchlist.id, holding_data)
+    
+    current_price = await get_current_price(f"{watchlist.symbol}")
+    holding_data = await update_holding(db, watchlist.id, holding_data,current_price)
+    holding_data_dict = vars(holding_data)
+    pnl = (current_price-holding_data_dict['average_cost'])*holding_data_dict['shares']
+    holding_data_dict['pnl'] =pnl
+    total_value = current_price * holding_data_dict['shares']
+    holding_data_dict['total_value'] = total_value
+    return holding_data
 
 
 # @router.put("/watchlist/{watchlist_id}/holding", response_model=HoldingResponse)
@@ -66,7 +73,7 @@ async def remove_symbol_from_watchlist(
     return await delete_symbol_from_watchlist(db, watchlist_id, user.id, symbol)
 
 
-@router.get("/watchlist/symbols", response_model=List[str])
+@router.get("/watchlist/symbols")
 async def get_user_watchlist(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
@@ -92,3 +99,18 @@ async def get_holding_details(
     db: AsyncSession = Depends(get_session),
 ):
     return await get_holding_by_symbol_crud(db, user.id, symbol)
+
+#get total value of all the assests not just one symbol
+@router.get("/totalvalue")
+async def get_total_value_of_all_assets(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+    ):
+    return await get_total_value_of_all_assets_crud(db, user.id)
+
+@router.get("/totalvalue-gbp")
+async def get_total_value_of_all_assets_gbp(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_session),
+):
+    return await get_total_value_of_all_assets_crud_gbp(db, user.id)

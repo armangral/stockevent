@@ -1,15 +1,16 @@
 
-from typing import List
+from typing import Any, List
 from uuid import UUID
 from fastapi import HTTPException
-from sqlalchemy import delete, select
+import requests
+from sqlalchemy import Tuple, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.holdings import Holding
 from app.models.watchlists import Watchlist
 from app.schemas.holdings import HoldingResponse
 from app.schemas.watchlists import WatchlistCreate
-
+import yfinance as yf
 
 
 # CRUD Operations
@@ -18,6 +19,7 @@ async def create_watchlist(db: AsyncSession,user_id:UUID, watchlist_data: Watchl
         select(Watchlist).where(
             Watchlist.user_id == user_id,
             Watchlist.symbol == watchlist_data.symbol,
+            Watchlist.type == watchlist_data.type
         )
     )
     if existing_watchlist.scalar():
@@ -45,10 +47,18 @@ async def delete_watchlist(db: AsyncSession, watchlist_id: int):
     return watchlist
 
 
-async def get_user_watchlist_symbols_crud(db: AsyncSession, user_id: UUID) -> List[str]:
-    query = select(Watchlist.symbol).where(Watchlist.user_id == user_id)
+async def get_user_watchlist_symbols_crud(
+    db: AsyncSession, user_id: UUID
+):
+    query = select(Watchlist.symbol, Watchlist.type).where(Watchlist.user_id == user_id)
     result = await db.execute(query)
-    return [row[0] for row in result.fetchall()]
+    return [(row[0], row[1]) for row in result.fetchall()]
+
+
+# async def get_user_watchlist_symbols_crud(db: AsyncSession, user_id: UUID) -> List[str]:
+#     query = select(Watchlist.symbol).where(Watchlist.user_id == user_id)
+#     result = await db.execute(query)
+#     return [row[0] for row in result.fetchall()]
 
 async def get_user_watchlist_id_crud(db: AsyncSession, user_id: UUID) -> UUID | None:
     query = select(Watchlist.id).where(Watchlist.user_id == user_id)
@@ -113,3 +123,69 @@ async def get_watchlist_by_symbol(db: AsyncSession, user_id: UUID, symbol: str):
         )
     )
     return result.scalar_one_or_none()
+
+async def get_total_value_of_all_assets_crud(db: AsyncSession, user_id: UUID):
+    # Fetch all symbols and their respective holdings
+    result = await db.execute(
+        select(Watchlist.symbol, Holding.shares)
+        .join(Watchlist, Holding.watchlist_id == Watchlist.id)
+        .where(Watchlist.user_id == user_id)
+    )
+
+    holdings = result.all()
+
+    total_value = 0.0
+    for symbol, shares in holdings:
+        current_price = await get_current_price(symbol)  # Fetch live price
+        total_value += shares * current_price  # Compute total value
+
+    return total_value
+
+
+async def get_current_price(symbol: str) -> float:
+    """
+    Fetches the current price of a given stock symbol using yfinance.
+
+    :param symbol: Stock symbol (e.g., "AAPL", "TSLA").
+    :return: Current price as a float.
+    """
+    try:
+        stock = yf.Ticker(f"{symbol}-usd")
+        price = stock.history(period="1d")["Close"].iloc[
+            -1
+        ]  # Get the latest closing price
+        return float(price)
+    except Exception as e:
+        print(f"Error fetching price for {symbol}: {e}")
+        return 0.0  # Default to 0.0 in case of an error
+    
+
+
+
+async def get_usd_to_gbp_rate():
+    # Example API call to fetch USD to GBP conversion rate
+    response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+    data = response.json()
+    return data["rates"]["GBP"]
+
+
+async def get_total_value_of_all_assets_crud_gbp(db: AsyncSession, user_id: UUID):
+    # Fetch all symbols and their respective holdings
+    result = await db.execute(
+        select(Watchlist.symbol, Holding.shares)
+        .join(Watchlist, Holding.watchlist_id == Watchlist.id)
+        .where(Watchlist.user_id == user_id)
+    )
+
+    holdings = result.all()
+
+    total_value_usd = 0.0
+    for symbol, shares in holdings:
+        current_price = await get_current_price(symbol)  # Fetch live price
+        total_value_usd += shares * current_price  # Compute total USD value
+
+    # Convert USD to GBP
+    usd_to_gbp_rate = await get_usd_to_gbp_rate()
+    total_value_gbp = total_value_usd * usd_to_gbp_rate
+
+    return total_value_gbp

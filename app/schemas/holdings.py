@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class HoldingCreate(BaseModel):
     shares: float
-    average_cost: float
+    # average_cost: float
 
 
 class HoldingResponse(BaseModel):

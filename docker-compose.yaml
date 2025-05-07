@@ -1,0 +1,95 @@
+services:
+  dbstock:
+    container_name: postgresql_db_stockevent
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - postgres_data_stockevent:/var/lib/postgresql/data  # Persist PostgreSQL data
+    networks:
+      - app_network_stockevent
+    env_file:
+      - ./.env
+
+  pgadmin:
+    container_name: pgadmin_stockevent
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5051:80"
+    depends_on:
+      - dbstock
+    networks:
+      - app_network_stockevent
+    env_file:
+      - ./.env
+
+  redis:
+    container_name: redis_stockevent
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_stockevent_abc:/data  # Persist Redis data
+    networks:
+      - app_network_stockevent
+
+  app:
+    container_name: app_stockevent
+    build: .
+    command: >
+      bash -c "alembic upgrade head &&
+               uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+    ports:
+      - "8012:8000"
+    depends_on:
+      - dbstock
+
+    restart: on-failure
+    networks:
+      - app_network_stockevent
+    env_file:
+      - ./.env
+
+  celery:
+    container_name: celery_worker_stockevent
+    build: .
+    command: bash -c "celery -A celery_config worker --loglevel=info"
+    depends_on:
+      - redis
+      - app
+    restart: always
+    networks:
+      - app_network_stockevent
+    env_file:
+      - ./.env
+
+  celery-beat:
+    container_name: celery_beat_stockevent
+    build: .
+    command: bash -c "celery -A celery_config beat --loglevel=info"
+    depends_on:
+      - redis
+      - celery
+    restart: always
+    networks:
+      - app_network_stockevent
+    env_file:
+      - ./.env
+
+volumes:
+  postgres_data_stockevent:
+    driver: local
+  redis_data_stockevent_abc:
+    driver: local  # Ensures Redis data is stored persistently
+
+networks:
+  app_network_stockevent:
+    driver: bridge

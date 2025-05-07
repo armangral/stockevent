@@ -1,0 +1,38 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and virtual environments
+.venv/
+venv/
+env/
+
+
+# omit this
+test_email.py
+
+# Dependency directories
+*.egg-info/
+*.egg
+*.pyd
+
+# IDE settings (VSCode example)
+.vscode/
+.idea/
+
+# Logs and database files
+*.log
+*.sqlite3
+db.sqlite3
+
+# Static and media files (if using file uploads)
+static/
+media/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+
